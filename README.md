@@ -13,3 +13,9 @@ I have used opencode and Deepseek for the more upgrades that were not possible i
 
 # Supabase:
 I have used supabase as the datastoring and the other backend functions. I choose supabase over MySQL and Firebase because I felt more comfortable and easy to setup. The easier may be in the MySQL but MySQL could not provide integrated SMTP service that may be crucial for the confirming the email with providing OTP codes.
+
+# OpenStreetMap:
+There was the section in the bottom nav bar "MAP", so I added the opensource map (OpenStreetMap) as OpenStreetMap is truly free with no limits. Google Maps requires:
+- An API key from Google Cloud Platform
+- Billing enabled (though you get $200 free credit/month, enough for ~28k map loads)
+- charged if you exceed the free tier
