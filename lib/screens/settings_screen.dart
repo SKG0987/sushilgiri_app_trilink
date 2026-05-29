@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/theme_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -97,7 +98,21 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 8),
             _devRow(context, Icons.work_rounded, 'Role', 'Flutter Developer'),
             const SizedBox(height: 8),
-            _devRow(context, Icons.email_rounded, 'Email', 'thesushilgiri0987@gmail.com'),
+            _devRow(
+              context,
+              Icons.call_rounded,
+              'Phone',
+              '9866720830',
+              onTap: () => launchUrl(Uri.parse('tel:9866720830')),
+            ),
+            const SizedBox(height: 8),
+            _devRow(
+              context,
+              Icons.email_rounded,
+              'Email',
+              'thesushilgiri0987@gmail.com',
+              onTap: () => launchUrl(Uri.parse('mailto:thesushilgiri0987@gmail.com')),
+            ),
           ],
         ),
         actions: [
@@ -110,28 +125,48 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _devRow(BuildContext context, IconData icon, String label, String value) {
+  Widget _devRow(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value, {
+    VoidCallback? onTap,
+  }) {
     final theme = Theme.of(context);
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
-        const SizedBox(width: 8),
-        Text(
-          '$label: ',
-          style: GoogleFonts.poppins(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: theme.colorScheme.onSurface,
-          ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        child: Row(
+          children: [
+            Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
+            const SizedBox(width: 8),
+            Text(
+              '$label: ',
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+            Expanded(
+              child: Text(
+                value,
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  color: onTap != null
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.onSurfaceVariant,
+                  decoration:
+                      onTap != null ? TextDecoration.underline : null,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
-        Text(
-          value,
-          style: GoogleFonts.poppins(
-            fontSize: 13,
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
+      ),
     );
   }
 
