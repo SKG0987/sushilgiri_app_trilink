@@ -80,6 +80,13 @@ class MyApp extends StatelessWidget {
                 ),
               ),
             ),
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              backgroundColor: Colors.white,
+              selectedItemColor: Color(0xFF4F46E5),
+              unselectedItemColor: Color(0xFF94A3B8),
+              type: BottomNavigationBarType.fixed,
+              elevation: 0,
+            ),
             inputDecorationTheme: InputDecorationTheme(
               filled: true,
               fillColor: Colors.white,
@@ -110,15 +117,31 @@ class MyApp extends StatelessWidget {
             colorScheme: ColorScheme.fromSeed(
               seedColor: const Color(0xFF4F46E5),
               brightness: Brightness.dark,
+              surface: const Color(0xFF0F0F1A),
             ),
             textTheme: GoogleFonts.poppinsTextTheme(),
             useMaterial3: true,
+            scaffoldBackgroundColor: const Color(0xFF0F0F1A),
+            cardColor: const Color(0xFF1A1A2E),
+            dividerColor: const Color(0xFF2A2A3E),
             appBarTheme: AppBarTheme(
               centerTitle: true,
+              backgroundColor: const Color(0xFF151525),
+              elevation: 0,
+              scrolledUnderElevation: 1,
+              iconTheme: const IconThemeData(color: Color(0xFFE2E8F0)),
               titleTextStyle: GoogleFonts.poppins(
+                color: const Color(0xFFE2E8F0),
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
+            ),
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              backgroundColor: Color(0xFF151525),
+              selectedItemColor: Color(0xFF818CF8),
+              unselectedItemColor: Color(0xFF64748B),
+              type: BottomNavigationBarType.fixed,
+              elevation: 0,
             ),
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
@@ -137,25 +160,59 @@ class MyApp extends StatelessWidget {
             ),
             inputDecorationTheme: InputDecorationTheme(
               filled: true,
+              fillColor: const Color(0xFF1A1A2E),
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF2A2A3E)),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF2A2A3E)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide:
-                    const BorderSide(color: Color(0xFF4F46E5), width: 2),
+                    const BorderSide(color: Color(0xFF818CF8), width: 2),
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Colors.red),
+                borderSide: const BorderSide(color: Color(0xFFEF4444)),
               ),
-              labelStyle: GoogleFonts.poppins(),
-              hintStyle: GoogleFonts.poppins(),
+              labelStyle: GoogleFonts.poppins(color: const Color(0xFF94A3B8)),
+              hintStyle: GoogleFonts.poppins(color: const Color(0xFF475569)),
+            ),
+            snackBarTheme: SnackBarThemeData(
+              backgroundColor: const Color(0xFF1E1E32),
+              contentTextStyle: GoogleFonts.poppins(
+                color: const Color(0xFFE2E8F0),
+                fontSize: 14,
+              ),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            dialogTheme: DialogThemeData(
+              backgroundColor: const Color(0xFF1A1A2E),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            switchTheme: SwitchThemeData(
+              thumbColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return const Color(0xFF818CF8);
+                }
+                return const Color(0xFF64748B);
+              }),
+              trackColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return const Color(0xFF4F46E5).withOpacity(0.5);
+                }
+                return const Color(0xFF2A2A3E);
+              }),
             ),
           ),
           home: const MainShell(),

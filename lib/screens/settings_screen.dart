@@ -7,6 +7,7 @@ class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   void _showAboutApp(BuildContext context) {
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -18,12 +19,12 @@ class SettingsScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFFEEF2FF),
+                color: theme.colorScheme.primary.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.info_rounded,
-                color: Color(0xFF4F46E5),
+                color: theme.colorScheme.primary,
                 size: 24,
               ),
             ),
@@ -32,7 +33,7 @@ class SettingsScreen extends StatelessWidget {
               'About App',
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF1A1A2E),
+                color: theme.colorScheme.onSurface,
               ),
             ),
           ],
@@ -41,7 +42,7 @@ class SettingsScreen extends StatelessWidget {
           'This is the app made as the assignment for the internship selection round. '
           'This app is developed by Sushil Giri.',
           style: GoogleFonts.poppins(
-            color: const Color(0xFF64748B),
+            color: theme.colorScheme.onSurfaceVariant,
             fontSize: 14,
             height: 1.5,
           ),
@@ -57,6 +58,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showAboutDeveloper(BuildContext context) {
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -68,12 +70,12 @@ class SettingsScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFFEEF2FF),
+                color: theme.colorScheme.primary.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.code_rounded,
-                color: Color(0xFF4F46E5),
+                color: theme.colorScheme.primary,
                 size: 24,
               ),
             ),
@@ -82,7 +84,7 @@ class SettingsScreen extends StatelessWidget {
               'About Developer',
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF1A1A2E),
+                color: theme.colorScheme.onSurface,
               ),
             ),
           ],
@@ -91,11 +93,11 @@ class SettingsScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _devRow(Icons.person_rounded, 'Name', 'Sushil Giri'),
+            _devRow(context, Icons.person_rounded, 'Name', 'Sushil Giri'),
             const SizedBox(height: 8),
-            _devRow(Icons.work_rounded, 'Role', 'Flutter Developer'),
+            _devRow(context, Icons.work_rounded, 'Role', 'Flutter Developer'),
             const SizedBox(height: 8),
-            _devRow(Icons.email_rounded, 'Email', 'thesushilgiri0987@gmail.com'),
+            _devRow(context, Icons.email_rounded, 'Email', 'thesushilgiri0987@gmail.com'),
           ],
         ),
         actions: [
@@ -108,24 +110,25 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _devRow(IconData icon, String label, String value) {
+  Widget _devRow(BuildContext context, IconData icon, String label, String value) {
+    final theme = Theme.of(context);
     return Row(
       children: [
-        Icon(icon, size: 16, color: const Color(0xFF64748B)),
+        Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
         const SizedBox(width: 8),
         Text(
           '$label: ',
           style: GoogleFonts.poppins(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF1A1A2E),
+            color: theme.colorScheme.onSurface,
           ),
         ),
         Text(
           value,
           style: GoogleFonts.poppins(
             fontSize: 13,
-            color: const Color(0xFF64748B),
+            color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
       ],
@@ -134,6 +137,7 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
@@ -146,7 +150,7 @@ class SettingsScreen extends StatelessWidget {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: theme.cardColor,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
@@ -187,10 +191,10 @@ class SettingsScreen extends StatelessWidget {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        trailing: const Icon(
+                        trailing: Icon(
                           Icons.arrow_forward_ios_rounded,
                           size: 16,
-                          color: Color(0xFFCBD5E1),
+                          color: theme.colorScheme.secondary,
                         ),
                         onTap: () => _showAboutApp(context),
                       ),
@@ -207,10 +211,10 @@ class SettingsScreen extends StatelessWidget {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        trailing: const Icon(
+                        trailing: Icon(
                           Icons.arrow_forward_ios_rounded,
                           size: 16,
-                          color: Color(0xFFCBD5E1),
+                          color: theme.colorScheme.secondary,
                         ),
                         onTap: () => _showAboutDeveloper(context),
                       ),

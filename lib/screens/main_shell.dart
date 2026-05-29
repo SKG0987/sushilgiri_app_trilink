@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'home_screen.dart';
 import 'map_screen.dart';
 import 'profile_screen.dart';
 import 'settings_screen.dart';
+import '../services/auth_provider.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -42,7 +45,7 @@ class _MainShellState extends State<MainShell> {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).scaffoldBackgroundColor,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.04),
@@ -54,39 +57,63 @@ class _MainShellState extends State<MainShell> {
         child: BottomNavigationBar(
           currentIndex: _selectedIndex,
           onTap: _onItemTapped,
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: const Color(0xFF4F46E5),
-          unselectedItemColor: const Color(0xFF94A3B8),
           selectedLabelStyle: GoogleFonts.poppins(
             fontSize: 11,
             fontWeight: FontWeight.w500,
           ),
           unselectedLabelStyle: GoogleFonts.poppins(fontSize: 11),
-          items: const [
-            BottomNavigationBarItem(
+          items: [
+            const BottomNavigationBarItem(
               icon: Icon(Icons.home_rounded),
               label: 'Home',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.map_rounded),
               label: 'Map',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.swap_horiz),
               label: 'Transfer',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.settings_rounded),
               label: 'Settings',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person_rounded),
+              icon: _buildProfileIcon(context),
               label: 'Profile',
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildProfileIcon(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    final user = auth.currentUser;
+    final pic = user?.profilePic;
+
+    if (pic != null && pic.isNotEmpty) {
+      try {
+        final bytes = base64Decode(pic.split(',').last);
+        return ClipOval(
+          child: SizedBox(
+            width: 24,
+            height: 24,
+            child: Image.memory(
+              bytes,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) =>
+                  const Icon(Icons.person_rounded),
+            ),
+          ),
+        );
+      } catch (_) {
+        return const Icon(Icons.person_rounded);
+      }
+    }
+    return const Icon(Icons.person_rounded);
   }
 }
 
@@ -95,20 +122,22 @@ class TransferPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(title: const Text('Transfer')),
-      body: const Center(
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.credit_card_rounded, size: 64, color: Color(0xFFCBD5E1)),
-            SizedBox(height: 16),
-            Text('Transfer - Coming Soon'),
+            Icon(Icons.credit_card_rounded, size: 64, color: theme.colorScheme.secondary),
+            const SizedBox(height: 16),
+            Text(
+              'Transfer - Coming Soon',
+              style: GoogleFonts.poppins(color: theme.colorScheme.secondary),
+            ),
           ],
         ),
       ),
     );
   }
 }
-
-

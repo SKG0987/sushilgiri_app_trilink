@@ -56,8 +56,8 @@ class _ApiScreenState extends State<ApiScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         title: const Text('API Integration'),
         leading: IconButton(
@@ -80,20 +80,21 @@ class _ApiScreenState extends State<ApiScreen> {
               margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFFF0F9FF),
+                color: theme.colorScheme.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFBAE6FD)),
+                border: Border.all(
+                    color: theme.colorScheme.primary.withOpacity(0.2)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.cloud_done_rounded,
-                      color: Color(0xFF0EA5E9), size: 18),
+                  Icon(Icons.cloud_done_rounded,
+                      color: theme.colorScheme.primary, size: 18),
                   const SizedBox(width: 8),
                   Text(
                     '${_posts.length} posts fetched from JSONPlaceholder API',
                     style: GoogleFonts.poppins(
                       fontSize: 12,
-                      color: const Color(0xFF0369A1),
+                      color: theme.colorScheme.primary,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -106,66 +107,72 @@ class _ApiScreenState extends State<ApiScreen> {
           // Content
           Expanded(
             child: _isLoading
-                ? const Center(
+                ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         CircularProgressIndicator(
-                          color: Color(0xFF4F46E5),
+                          color: theme.colorScheme.primary,
                         ),
-                        SizedBox(height: 16),
-                        Text('Fetching posts...'),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Fetching posts...',
+                          style: GoogleFonts.poppins(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
                       ],
                     ),
                   )
-                : _error != null
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(20),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFEF2F2),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.cloud_off_rounded,
-                                  size: 48,
-                                  color: Color(0xFFEF4444),
-                                ),
+                    : _error != null
+                        ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.error
+                                          .withOpacity(0.12),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.cloud_off_rounded,
+                                      size: 48,
+                                      color: theme.colorScheme.error,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Oops! Something went wrong',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: theme.colorScheme.onSurface,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    _error!,
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  ElevatedButton.icon(
+                                    onPressed: _fetchPosts,
+                                    icon: const Icon(Icons.refresh_rounded,
+                                        size: 18),
+                                    label: const Text('Try Again'),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'Oops! Something went wrong',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF1A1A2E),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                _error!,
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13,
-                                  color: const Color(0xFF64748B),
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              ElevatedButton.icon(
-                                onPressed: _fetchPosts,
-                                icon: const Icon(Icons.refresh_rounded,
-                                    size: 18),
-                                label: const Text('Try Again'),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
+                            ),
+                          )
                     : ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         itemCount: _posts.length,
@@ -188,18 +195,12 @@ class _PostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -210,7 +211,7 @@ class _PostCard extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: const Color(0xFFEEF2FF),
+                color: theme.colorScheme.primary.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Center(
@@ -219,7 +220,7 @@ class _PostCard extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF4F46E5),
+                    color: theme.colorScheme.primary,
                   ),
                 ),
               ),
@@ -234,7 +235,7 @@ class _PostCard extends StatelessWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1A1A2E),
+                      color: theme.colorScheme.onSurface,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -244,7 +245,7 @@ class _PostCard extends StatelessWidget {
                     post.body,
                     style: GoogleFonts.poppins(
                       fontSize: 12,
-                      color: const Color(0xFF94A3B8),
+                      color: theme.colorScheme.onSurfaceVariant,
                       height: 1.5,
                     ),
                     maxLines: 3,
@@ -253,14 +254,14 @@ class _PostCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.person_outline_rounded,
-                          size: 12, color: Color(0xFFCBD5E1)),
+                      Icon(Icons.person_outline_rounded,
+                          size: 12, color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
                       const SizedBox(width: 4),
                       Text(
                         'User ${post.userId}',
                         style: GoogleFonts.poppins(
                           fontSize: 11,
-                          color: const Color(0xFFCBD5E1),
+                          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                         ),
                       ),
                     ],

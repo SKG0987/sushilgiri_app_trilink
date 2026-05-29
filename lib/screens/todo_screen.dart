@@ -36,6 +36,7 @@ class _TodoScreenState extends State<TodoScreen>
     final descController =
         TextEditingController(text: todo?.description ?? '');
     final formKey = GlobalKey<FormState>();
+    final theme = Theme.of(context);
 
     showModalBottomSheet(
       context: context,
@@ -46,9 +47,9 @@ class _TodoScreenState extends State<TodoScreen>
           bottom: MediaQuery.of(ctx).viewInsets.bottom,
         ),
         child: Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          decoration: BoxDecoration(
+            color: theme.cardColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           padding: const EdgeInsets.all(24),
           child: Form(
@@ -63,7 +64,7 @@ class _TodoScreenState extends State<TodoScreen>
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE2E8F0),
+                      color: theme.dividerColor,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -75,7 +76,7 @@ class _TodoScreenState extends State<TodoScreen>
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1A1A2E),
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -85,9 +86,12 @@ class _TodoScreenState extends State<TodoScreen>
                   autofocus: true,
                   validator: (v) =>
                       v == null || v.trim().isEmpty ? 'Title is required' : null,
-                  decoration: const InputDecoration(
+                  style: GoogleFonts.poppins(color: theme.colorScheme.onSurface),
+                  decoration: InputDecoration(
                     labelText: 'Task Title',
                     hintText: 'Enter task title...',
+                    filled: true,
+                    fillColor: theme.colorScheme.surfaceContainerHighest,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -95,10 +99,13 @@ class _TodoScreenState extends State<TodoScreen>
                 TextFormField(
                   controller: descController,
                   maxLines: 3,
-                  decoration: const InputDecoration(
+                  style: GoogleFonts.poppins(color: theme.colorScheme.onSurface),
+                  decoration: InputDecoration(
                     labelText: 'Description (optional)',
                     hintText: 'Add more details...',
                     alignLabelWithHint: true,
+                    filled: true,
+                    fillColor: theme.colorScheme.surfaceContainerHighest,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -118,7 +125,7 @@ class _TodoScreenState extends State<TodoScreen>
                           'Cancel',
                           style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF64748B),
+                            color: theme.colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ),
@@ -156,7 +163,6 @@ class _TodoScreenState extends State<TodoScreen>
                                   content: Text(todo == null
                                       ? 'Failed to add task'
                                       : 'Failed to update task'),
-                                  backgroundColor: Colors.red,
                                 ),
                               );
                             }
@@ -177,6 +183,7 @@ class _TodoScreenState extends State<TodoScreen>
   }
 
   void _confirmDelete(BuildContext context, Todo todo) {
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -189,14 +196,14 @@ class _TodoScreenState extends State<TodoScreen>
         ),
         content: Text(
           'Are you sure you want to delete "${todo.title}"?',
-          style: GoogleFonts.poppins(color: const Color(0xFF64748B)),
+          style: GoogleFonts.poppins(color: theme.colorScheme.onSurfaceVariant),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'Cancel',
-              style: GoogleFonts.poppins(color: const Color(0xFF64748B)),
+              style: GoogleFonts.poppins(color: theme.colorScheme.onSurfaceVariant),
             ),
           ),
           ElevatedButton(
@@ -216,7 +223,7 @@ class _TodoScreenState extends State<TodoScreen>
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4444),
+              backgroundColor: theme.colorScheme.error,
             ),
             child: const Text('Delete'),
           ),
@@ -227,8 +234,8 @@ class _TodoScreenState extends State<TodoScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         title: const Text('To-Do List'),
         leading: IconButton(
@@ -247,9 +254,9 @@ class _TodoScreenState extends State<TodoScreen>
               fontSize: 13, fontWeight: FontWeight.w600),
           unselectedLabelStyle:
               GoogleFonts.poppins(fontSize: 13),
-          labelColor: const Color(0xFF4F46E5),
-          unselectedLabelColor: const Color(0xFF94A3B8),
-          indicatorColor: const Color(0xFF4F46E5),
+          labelColor: theme.colorScheme.primary,
+          unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
+          indicatorColor: theme.colorScheme.primary,
           indicatorWeight: 2.5,
           tabs: const [
             Tab(text: 'Pending'),
@@ -260,8 +267,8 @@ class _TodoScreenState extends State<TodoScreen>
       body: Consumer<TodoProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading) {
-            return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF4F46E5)),
+            return Center(
+              child: CircularProgressIndicator(color: theme.colorScheme.primary),
             );
           }
 
@@ -272,20 +279,20 @@ class _TodoScreenState extends State<TodoScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline_rounded,
-                        size: 48, color: Color(0xFFEF4444)),
+                    Icon(Icons.error_outline_rounded,
+                        size: 48, color: theme.colorScheme.error),
                     const SizedBox(height: 12),
                     Text(
                       'Error loading todos',
                       style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w600, fontSize: 16),
+                          fontWeight: FontWeight.w600, fontSize: 16, color: theme.colorScheme.onSurface),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       provider.error!,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
-                          color: const Color(0xFF64748B), fontSize: 13),
+                          color: theme.colorScheme.onSurfaceVariant, fontSize: 13),
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton(
@@ -323,17 +330,11 @@ class _TodoScreenState extends State<TodoScreen>
           );
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddEditDialog(),
-        backgroundColor: const Color(0xFF4F46E5),
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: Text(
-          'Add Task',
-          style: GoogleFonts.poppins(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
+        child: const Icon(Icons.add_rounded),
       ),
     );
   }
@@ -358,19 +359,20 @@ class _TodoList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     if (todos.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(emptyIcon, size: 64, color: const Color(0xFFCBD5E1)),
+            Icon(emptyIcon, size: 64, color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4)),
             const SizedBox(height: 16),
             Text(
               emptyMessage,
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(
                 fontSize: 16,
-                color: const Color(0xFF94A3B8),
+                color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
           ],
@@ -441,6 +443,7 @@ class _TodoCardState extends State<_TodoCard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final todo = widget.todo;
     final relativeDate = _relativeTime(
       todo.isCompleted && todo.completedAt != null
@@ -451,15 +454,8 @@ class _TodoCardState extends State<_TodoCard> {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Column(
         children: [
@@ -473,10 +469,8 @@ class _TodoCardState extends State<_TodoCard> {
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: todo.isCompleted
-                    ? const Color(0xFF94A3B8)
-                    : const Color(0xFF1A1A2E),
-                decoration:
-                    todo.isCompleted ? TextDecoration.lineThrough : null,
+                    ? theme.colorScheme.onSurfaceVariant
+                    : theme.colorScheme.onSurface,
               ),
             ),
             subtitle: Column(
@@ -489,7 +483,7 @@ class _TodoCardState extends State<_TodoCard> {
                       todo.description!,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        color: const Color(0xFFCBD5E1),
+                        color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                       ),
                       maxLines: _expanded ? 999 : 1,
                       overflow: TextOverflow.ellipsis,
@@ -500,7 +494,7 @@ class _TodoCardState extends State<_TodoCard> {
                     relativeDate,
                     style: GoogleFonts.poppins(
                       fontSize: 11,
-                      color: const Color(0xFF94A3B8),
+                      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                     ),
                   ),
               ],
@@ -516,14 +510,14 @@ class _TodoCardState extends State<_TodoCard> {
                     size: 22,
                     color: todo.isCompleted
                         ? const Color(0xFF10B981)
-                        : const Color(0xFFCBD5E1),
+                        : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                   ),
                   onPressed: widget.onToggle,
                   tooltip: todo.isCompleted ? 'Mark pending' : 'Mark complete',
                 ),
                 IconButton(
-                  icon: const Icon(Icons.edit_outlined,
-                      size: 18, color: Color(0xFF94A3B8)),
+                  icon: Icon(Icons.edit_outlined,
+                      size: 18, color: theme.colorScheme.onSurfaceVariant),
                   onPressed: widget.onEdit,
                   tooltip: 'Edit',
                 ),
@@ -543,12 +537,12 @@ class _TodoCardState extends State<_TodoCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Divider(),
+                  Divider(color: theme.dividerColor),
                   Text(
                     'Created: ${_formatDate(todo.createdAt)}',
                     style: GoogleFonts.poppins(
                       fontSize: 12,
-                      color: const Color(0xFF94A3B8),
+                      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                     ),
                   ),
                   if (todo.isCompleted && todo.completedAt != null)
@@ -558,7 +552,7 @@ class _TodoCardState extends State<_TodoCard> {
                         'Completed: ${_formatDate(todo.completedAt!)}',
                         style: GoogleFonts.poppins(
                           fontSize: 12,
-                          color: const Color(0xFF94A3B8),
+                          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                         ),
                       ),
                     ),

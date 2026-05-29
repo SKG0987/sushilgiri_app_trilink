@@ -13,8 +13,9 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -94,7 +95,7 @@ class HomeScreen extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1A1A2E),
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 4),
@@ -102,7 +103,7 @@ class HomeScreen extends StatelessWidget {
                 'Tap any task to navigate to it',
                 style: GoogleFonts.poppins(
                   fontSize: 13,
-                  color: const Color(0xFF64748B),
+                  color: theme.colorScheme.secondary,
                 ),
               ),
               const SizedBox(height: 20),
@@ -181,6 +182,7 @@ class _TaskButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -189,7 +191,7 @@ class _TaskButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.cardColor,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
@@ -254,14 +256,14 @@ class _TaskButton extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1A1A2E),
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
                     Text(
                       subtitle,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        color: const Color(0xFF94A3B8),
+                        color: theme.colorScheme.secondary,
                       ),
                     ),
                   ],
@@ -270,7 +272,7 @@ class _TaskButton extends StatelessWidget {
               Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 16,
-                color: const Color(0xFFCBD5E1),
+                color: theme.colorScheme.secondary,
               ),
             ],
           ),
