@@ -1,0 +1,577 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../services/todo_provider.dart';
+import '../services/auth_provider.dart';
+import '../models/todo.dart';
+
+class TodoScreen extends StatefulWidget {
+  const TodoScreen({super.key});
+
+  @override
+  State<TodoScreen> createState() => _TodoScreenState();
+}
+
+class _TodoScreenState extends State<TodoScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TodoProvider>().fetchTodos();
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _showAddEditDialog({Todo? todo}) {
+    final titleController = TextEditingController(text: todo?.title ?? '');
+    final descController =
+        TextEditingController(text: todo?.description ?? '');
+    final formKey = GlobalKey<FormState>();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(ctx).viewInsets.bottom,
+        ),
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Handle bar
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE2E8F0),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                Text(
+                  todo == null ? 'Add New Task' : 'Edit Task',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1A1A2E),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                TextFormField(
+                  controller: titleController,
+                  autofocus: true,
+                  validator: (v) =>
+                      v == null || v.trim().isEmpty ? 'Title is required' : null,
+                  decoration: const InputDecoration(
+                    labelText: 'Task Title',
+                    hintText: 'Enter task title...',
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                TextFormField(
+                  controller: descController,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    labelText: 'Description (optional)',
+                    hintText: 'Add more details...',
+                    alignLabelWithHint: true,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 52),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          if (!formKey.currentState!.validate()) return;
+                          Navigator.pop(ctx);
+                          final provider = context.read<TodoProvider>();
+                          final authProvider = context.read<AuthProvider>();
+                          try {
+                            if (todo == null) {
+                              await provider.addTodo(
+                                titleController.text.trim(),
+                                description: descController.text.trim().isEmpty
+                                    ? null
+                                    : descController.text.trim(),
+                                userId: authProvider.currentUser?.id,
+                              );
+                            } else {
+                              await provider.updateTodo(
+                                todo.id,
+                                titleController.text.trim(),
+                                description: descController.text.trim().isEmpty
+                                    ? null
+                                    : descController.text.trim(),
+                              );
+                            }
+                          } catch (_) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(todo == null
+                                      ? 'Failed to add task'
+                                      : 'Failed to update task'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        child: Text(todo == null ? 'Add Task' : 'Save'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context, Todo todo) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          'Delete Task',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'Are you sure you want to delete "${todo.title}"?',
+          style: GoogleFonts.poppins(color: const Color(0xFF64748B)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.poppins(color: const Color(0xFF64748B)),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              try {
+                await context.read<TodoProvider>().deleteTodo(todo.id);
+              } catch (_) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Failed to delete task'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
+      appBar: AppBar(
+        title: const Text('To-Do List'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_rounded, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: () => context.read<TodoProvider>().fetchTodos(),
+          ),
+        ],
+        bottom: TabBar(
+          controller: _tabController,
+          labelStyle: GoogleFonts.poppins(
+              fontSize: 13, fontWeight: FontWeight.w600),
+          unselectedLabelStyle:
+              GoogleFonts.poppins(fontSize: 13),
+          labelColor: const Color(0xFF4F46E5),
+          unselectedLabelColor: const Color(0xFF94A3B8),
+          indicatorColor: const Color(0xFF4F46E5),
+          indicatorWeight: 2.5,
+          tabs: const [
+            Tab(text: 'Pending'),
+            Tab(text: 'Completed'),
+          ],
+        ),
+      ),
+      body: Consumer<TodoProvider>(
+        builder: (context, provider, _) {
+          if (provider.isLoading) {
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFF4F46E5)),
+            );
+          }
+
+          if (provider.error != null) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline_rounded,
+                        size: 48, color: Color(0xFFEF4444)),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Error loading todos',
+                      style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600, fontSize: 16),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      provider.error!,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                          color: const Color(0xFF64748B), fontSize: 13),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: provider.fetchTodos,
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          return TabBarView(
+            controller: _tabController,
+            children: [
+              _TodoList(
+                todos: provider.pendingTodos,
+                emptyMessage: 'No pending tasks!\nTap + to add one.',
+                emptyIcon: Icons.task_alt_rounded,
+                onEdit: (todo) => _showAddEditDialog(todo: todo),
+                onDelete: (todo) => _confirmDelete(context, todo),
+                onToggle: (todo) =>
+                    context.read<TodoProvider>().toggleComplete(todo.id),
+              ),
+              _TodoList(
+                todos: provider.completedTodos,
+                emptyMessage: 'No completed tasks yet.',
+                emptyIcon: Icons.check_circle_outline_rounded,
+                onEdit: (todo) => _showAddEditDialog(todo: todo),
+                onDelete: (todo) => _confirmDelete(context, todo),
+                onToggle: (todo) =>
+                    context.read<TodoProvider>().toggleComplete(todo.id),
+              ),
+            ],
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showAddEditDialog(),
+        backgroundColor: const Color(0xFF4F46E5),
+        icon: const Icon(Icons.add_rounded, color: Colors.white),
+        label: Text(
+          'Add Task',
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TodoList extends StatelessWidget {
+  final List<Todo> todos;
+  final String emptyMessage;
+  final IconData emptyIcon;
+  final void Function(Todo) onEdit;
+  final void Function(Todo) onDelete;
+  final void Function(Todo) onToggle;
+
+  const _TodoList({
+    required this.todos,
+    required this.emptyMessage,
+    required this.emptyIcon,
+    required this.onEdit,
+    required this.onDelete,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (todos.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(emptyIcon, size: 64, color: const Color(0xFFCBD5E1)),
+            const SizedBox(height: 16),
+            Text(
+              emptyMessage,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                color: const Color(0xFF94A3B8),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: todos.length,
+      itemBuilder: (context, index) {
+        final todo = todos[index];
+        return _TodoCard(
+          todo: todo,
+          onEdit: () => onEdit(todo),
+          onDelete: () => onDelete(todo),
+          onToggle: () => onToggle(todo),
+        );
+      },
+    );
+  }
+}
+
+class _TodoCard extends StatefulWidget {
+  final Todo todo;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+  final VoidCallback onToggle;
+
+  const _TodoCard({
+    required this.todo,
+    required this.onEdit,
+    required this.onDelete,
+    required this.onToggle,
+  });
+
+  @override
+  State<_TodoCard> createState() => _TodoCardState();
+}
+
+class _TodoCardState extends State<_TodoCard> {
+  bool _expanded = false;
+
+  static String _formatDate(DateTime dt) {
+    final y = dt.year.toString().padLeft(4, '0');
+    final m = dt.month.toString().padLeft(2, '0');
+    final d = dt.day.toString().padLeft(2, '0');
+    final hour = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
+    final min = dt.minute.toString().padLeft(2, '0');
+    final ampm = dt.hour < 12 ? 'AM' : 'PM';
+    return '$y/$m/$d, $hour:$min $ampm';
+  }
+
+  static String _relativeTime(DateTime dt) {
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+    if (diff.inSeconds < 60) return 'now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes} mins ago';
+    if (diff.inHours < 24) return '${diff.inHours} hr ago';
+    if (diff.inDays == 1) {
+      final hour = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
+      final min = dt.minute.toString().padLeft(2, '0');
+      final ampm = dt.hour < 12 ? 'AM' : 'PM';
+      return 'yesterday $hour:$min $ampm';
+    }
+    return _formatDate(dt);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final todo = widget.todo;
+    final relativeDate = _relativeTime(
+      todo.isCompleted && todo.completedAt != null
+          ? todo.completedAt!
+          : todo.createdAt,
+    );
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          ListTile(
+            onTap: () => setState(() => _expanded = !_expanded),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            title: Text(
+              todo.title,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: todo.isCompleted
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF1A1A2E),
+                decoration:
+                    todo.isCompleted ? TextDecoration.lineThrough : null,
+              ),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (todo.description != null && todo.description!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: Text(
+                      todo.description!,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: const Color(0xFFCBD5E1),
+                      ),
+                      maxLines: _expanded ? 999 : 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                if (!_expanded)
+                  Text(
+                    relativeDate,
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      color: const Color(0xFF94A3B8),
+                    ),
+                  ),
+              ],
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    todo.isCompleted
+                        ? Icons.check_circle_rounded
+                        : Icons.check_circle_outline_rounded,
+                    size: 22,
+                    color: todo.isCompleted
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFFCBD5E1),
+                  ),
+                  onPressed: widget.onToggle,
+                  tooltip: todo.isCompleted ? 'Mark pending' : 'Mark complete',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined,
+                      size: 18, color: Color(0xFF94A3B8)),
+                  onPressed: widget.onEdit,
+                  tooltip: 'Edit',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded,
+                      size: 18, color: Color(0xFFEF4444)),
+                  onPressed: widget.onDelete,
+                  tooltip: 'Delete',
+                ),
+              ],
+            ),
+          ),
+          AnimatedCrossFade(
+            firstChild: const SizedBox.shrink(),
+            secondChild: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Divider(),
+                  Text(
+                    'Created: ${_formatDate(todo.createdAt)}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: const Color(0xFF94A3B8),
+                    ),
+                  ),
+                  if (todo.isCompleted && todo.completedAt != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        'Completed: ${_formatDate(todo.completedAt!)}',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: const Color(0xFF94A3B8),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            crossFadeState: _expanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 200),
+          ),
+        ],
+      ),
+    );
+  }
+}
