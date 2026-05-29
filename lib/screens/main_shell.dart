@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'home_screen.dart';
+import 'map_screen.dart';
 import 'profile_screen.dart';
 import 'settings_screen.dart';
 
@@ -21,7 +22,7 @@ class _MainShellState extends State<MainShell> {
     super.initState();
     _pages = [
       HomeScreen(onNavigateToTab: _onItemTapped),
-      const MapPlaceholder(),
+      const MapScreen(),
       const TransferPlaceholder(),
       const SettingsScreen(),
       const ProfileScreen(),
@@ -71,7 +72,7 @@ class _MainShellState extends State<MainShell> {
               label: 'Map',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.credit_card_rounded),
+              icon: Icon(Icons.swap_horiz),
               label: 'Transfer',
             ),
             BottomNavigationBarItem(
@@ -82,27 +83,6 @@ class _MainShellState extends State<MainShell> {
               icon: Icon(Icons.person_rounded),
               label: 'Profile',
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class MapPlaceholder extends StatelessWidget {
-  const MapPlaceholder({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Map')),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.map_rounded, size: 64, color: Color(0xFFCBD5E1)),
-            SizedBox(height: 16),
-            Text('Map View - Coming Soon'),
           ],
         ),
       ),
