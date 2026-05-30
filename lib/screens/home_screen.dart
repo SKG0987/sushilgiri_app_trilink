@@ -80,10 +80,7 @@ class HomeScreen extends StatelessWidget {
                               ? (pic.startsWith('data:')
                                   ? MemoryImage(base64Decode(pic.split(',').last))
                                   : NetworkImage(pic) as ImageProvider)
-                              : null,
-                          child: pic == null
-                              ? Icon(Icons.person_rounded, size: 36, color: Colors.white.withOpacity(0.7))
-                              : null,
+                              : const AssetImage('assets/icon.png'),
                         ),
                       ],
                     );
@@ -114,7 +111,6 @@ class HomeScreen extends StatelessWidget {
                 subtitle: 'Login required to view profile',
                 icon: Icons.person_rounded,
                 color: const Color(0xFF0EA5E9),
-                isRequired: true,
                 onTap: () {
                   final auth = context.read<AuthProvider>();
                   if (!auth.isLoggedIn) {
@@ -152,7 +148,6 @@ class HomeScreen extends StatelessWidget {
                 subtitle: 'Login or create a new account',
                 icon: Icons.lock_rounded,
                 color: const Color(0xFF10B981),
-                isRequired: true,
                 onTap: () {
                   final auth = context.read<AuthProvider>();
                   if (auth.isLoggedIn) {
@@ -181,7 +176,6 @@ class HomeScreen extends StatelessWidget {
                 subtitle: 'JSONPlaceholder posts with ListView',
                 icon: Icons.cloud_download_rounded,
                 color: const Color(0xFFF59E0B),
-                isRequired: false,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const ApiScreen()),
@@ -194,7 +188,6 @@ class HomeScreen extends StatelessWidget {
                 subtitle: 'Full CRUD with Supabase backend',
                 icon: Icons.checklist_rounded,
                 color: const Color(0xFFEF4444),
-                isRequired: false,
                 onTap: () {
                   final auth = context.read<AuthProvider>();
                   if (!auth.isLoggedIn) {
@@ -243,7 +236,6 @@ class _TaskButton extends StatelessWidget {
   final String subtitle;
   final IconData icon;
   final Color color;
-  final bool isRequired;
   final VoidCallback onTap;
 
   const _TaskButton({
@@ -252,7 +244,6 @@ class _TaskButton extends StatelessWidget {
     required this.subtitle,
     required this.icon,
     required this.color,
-    required this.isRequired,
     required this.onTap,
   });
 
@@ -301,27 +292,6 @@ class _TaskButton extends StatelessWidget {
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                             color: color,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: isRequired
-                                ? const Color(0xFFDCFCE7)
-                                : const Color(0xFFFEF9C3),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            isRequired ? 'Required' : 'Bonus',
-                            style: GoogleFonts.poppins(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: isRequired
-                                  ? const Color(0xFF16A34A)
-                                  : const Color(0xFFCA8A04),
-                            ),
                           ),
                         ),
                       ],
