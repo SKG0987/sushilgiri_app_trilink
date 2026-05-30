@@ -109,7 +109,7 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 20),
               _TaskButton(
                 taskNumber: 1,
-                title: 'Profile Page Design',
+                title: 'Profile Page',
                 subtitle: 'Login required to view profile',
                 icon: Icons.person_rounded,
                 color: const Color(0xFF0EA5E9),

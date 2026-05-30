@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
@@ -261,7 +262,7 @@ class _MapScreenState extends State<MapScreen> {
                             name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500),
                           ),
@@ -270,7 +271,7 @@ class _MapScreenState extends State<MapScreen> {
                                   rest,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
+                                  style: GoogleFonts.poppins(
                                       fontSize: 11,
                                       color: Colors.grey),
                                 )
