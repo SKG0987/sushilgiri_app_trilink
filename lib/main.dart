@@ -8,7 +8,7 @@ import 'services/theme_provider.dart';
 import 'services/todo_provider.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();    //ensures Flutter is attached to the native app.
 
   await Supabase.initialize(
     url: 'https://bgqnhkddlmdtldrolpoj.supabase.co',
@@ -19,6 +19,8 @@ void main() async {
   final themeProvider = ThemeProvider();
   await themeProvider.loadTheme();
 
+//loadTheme() reads SharedPreferences to check if dark mode was enabled previously.
+
   runApp(
     MultiProvider(
       providers: [
@@ -27,8 +29,8 @@ void main() async {
           provider.tryAutoLogin();
           return provider;
         }),
-        ChangeNotifierProvider.value(value: themeProvider),
-        ChangeNotifierProvider(create: (_) => TodoProvider()),
+        ChangeNotifierProvider.value(value: themeProvider),       // holds the current theme mode.
+        ChangeNotifierProvider(create: (_) => TodoProvider()),    // initially empty, will fetch todos only when needed.
       ],
       child: const MyApp(),
     ),
@@ -113,6 +115,8 @@ class MyApp extends StatelessWidget {
               hintStyle: GoogleFonts.poppins(color: const Color(0xFFCBD5E1)),
             ),
           ),
+
+          // Dark theme
           darkTheme: ThemeData(
             colorScheme: ColorScheme.fromSeed(
               seedColor: const Color(0xFF4F46E5),
