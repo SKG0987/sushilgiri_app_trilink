@@ -594,15 +594,16 @@ class _TodoCardState extends State<_TodoCard> {
                   onPressed: widget.onToggle,
                   tooltip: todo.isCompleted ? 'Mark pending' : 'Mark complete',
                 ),
-                IconButton(
-                  icon: Icon(
-                    Icons.edit_outlined,
-                    size: 18,
-                    color: theme.colorScheme.onSurfaceVariant,
+                if (!todo.isCompleted)
+                  IconButton(
+                    icon: Icon(
+                      Icons.edit_outlined,
+                      size: 18,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                    onPressed: widget.onEdit,
+                    tooltip: 'Edit',
                   ),
-                  onPressed: widget.onEdit,
-                  tooltip: 'Edit',
-                ),
                 IconButton(
                   icon: const Icon(
                     Icons.delete_outline_rounded,
