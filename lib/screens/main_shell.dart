@@ -7,6 +7,7 @@ import 'map_screen.dart';
 import 'profile_screen.dart';
 import 'settings_screen.dart';
 import '../services/auth_provider.dart';
+import 'login_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -18,22 +19,47 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _selectedIndex = 0;
 
-  late final List<Widget> _pages;
-
   @override
   void initState() {
     super.initState();
-    _pages = [
-      HomeScreen(onNavigateToTab: _onItemTapped),
-      const MapScreen(),
-      const TransferPlaceholder(),
-      const SettingsScreen(),
-      const ProfileScreen(),
-    ];
   }
 
   void _onItemTapped(int index) {
     setState(() => _selectedIndex = index);
+
+    if (index == 3) {
+      final auth = context.read<AuthProvider>();
+      if (!auth.isLoggedIn) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _showLoginAlert(context);
+        });
+      }
+    }
+  }
+
+  void _showLoginAlert(BuildContext ctx) {
+    showDialog(
+      context: ctx,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Login Required'),
+        content: const Text('First Login to see your profile'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              Navigator.push(
+                ctx,
+                MaterialPageRoute(
+                  builder: (_) => const LoginScreen(),
+                ),
+              );
+            },
+            child: const Text('Login'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -41,7 +67,12 @@ class _MainShellState extends State<MainShell> {
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
-        children: _pages,
+        children: [
+          HomeScreen(onNavigateToTab: _onItemTapped),
+          MapScreen(selectedTabIndex: _selectedIndex),
+          const SettingsScreen(),
+          const ProfileScreen(),
+        ],
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -70,10 +101,6 @@ class _MainShellState extends State<MainShell> {
             const BottomNavigationBarItem(
               icon: Icon(Icons.map_rounded),
               label: 'Map',
-            ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.swap_horiz),
-              label: 'Transfer',
             ),
             const BottomNavigationBarItem(
               icon: Icon(Icons.settings_rounded),
@@ -114,30 +141,5 @@ class _MainShellState extends State<MainShell> {
       }
     }
     return const Icon(Icons.person_rounded);
-  }
-}
-
-class TransferPlaceholder extends StatelessWidget {
-  const TransferPlaceholder({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Scaffold(
-      appBar: AppBar(title: const Text('Transfer')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.credit_card_rounded, size: 64, color: theme.colorScheme.secondary),
-            const SizedBox(height: 16),
-            Text(
-              'Transfer - Coming Soon',
-              style: GoogleFonts.poppins(color: theme.colorScheme.secondary),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

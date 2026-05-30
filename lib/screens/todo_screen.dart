@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../services/todo_provider.dart';
-import '../services/auth_provider.dart';
+
 import '../models/todo.dart';
+import '../services/auth_provider.dart';
+import '../services/todo_provider.dart';
 
 class TodoScreen extends StatefulWidget {
   const TodoScreen({super.key});
@@ -14,15 +15,22 @@ class TodoScreen extends StatefulWidget {
 
 class _TodoScreenState extends State<TodoScreen>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+  late final TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<TodoProvider>().fetchTodos();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _fetchTodos());
+  }
+
+  void _fetchTodos() {
+    final auth = context.read<AuthProvider>();
+    if (auth.isLoggedIn) {
+      context
+          .read<TodoProvider>()
+          .fetchTodos(userId: auth.currentUser!.id);
+    }
   }
 
   @override
@@ -58,7 +66,6 @@ class _TodoScreenState extends State<TodoScreen>
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Handle bar
                 Center(
                   child: Container(
                     width: 40,
@@ -136,36 +143,38 @@ class _TodoScreenState extends State<TodoScreen>
                         onPressed: () async {
                           if (!formKey.currentState!.validate()) return;
                           Navigator.pop(ctx);
+
                           final provider = context.read<TodoProvider>();
                           final authProvider = context.read<AuthProvider>();
+
                           try {
+                            final title = titleController.text.trim();
+                            final description = descController.text.trim();
+
                             if (todo == null) {
                               await provider.addTodo(
-                                titleController.text.trim(),
-                                description: descController.text.trim().isEmpty
-                                    ? null
-                                    : descController.text.trim(),
+                                title,
+                                description:
+                                    description.isEmpty ? null : description,
                                 userId: authProvider.currentUser?.id,
                               );
                             } else {
                               await provider.updateTodo(
                                 todo.id,
-                                titleController.text.trim(),
-                                description: descController.text.trim().isEmpty
-                                    ? null
-                                    : descController.text.trim(),
+                                title,
+                                description:
+                                    description.isEmpty ? null : description,
                               );
                             }
                           } catch (_) {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(todo == null
-                                      ? 'Failed to add task'
-                                      : 'Failed to update task'),
-                                ),
-                              );
-                            }
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(todo == null
+                                    ? 'Failed to add task'
+                                    : 'Failed to update task'),
+                              ),
+                            );
                           }
                         },
                         child: Text(todo == null ? 'Add Task' : 'Save'),
@@ -203,7 +212,8 @@ class _TodoScreenState extends State<TodoScreen>
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'Cancel',
-              style: GoogleFonts.poppins(color: theme.colorScheme.onSurfaceVariant),
+              style:
+                  GoogleFonts.poppins(color: theme.colorScheme.onSurfaceVariant),
             ),
           ),
           ElevatedButton(
@@ -212,14 +222,13 @@ class _TodoScreenState extends State<TodoScreen>
               try {
                 await context.read<TodoProvider>().deleteTodo(todo.id);
               } catch (_) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Failed to delete task'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Failed to delete task'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
               }
             },
             style: ElevatedButton.styleFrom(
@@ -235,107 +244,160 @@ class _TodoScreenState extends State<TodoScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('To-Do List'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: () => context.read<TodoProvider>().fetchTodos(),
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          labelStyle: GoogleFonts.poppins(
-              fontSize: 13, fontWeight: FontWeight.w600),
-          unselectedLabelStyle:
-              GoogleFonts.poppins(fontSize: 13),
-          labelColor: theme.colorScheme.primary,
-          unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
-          indicatorColor: theme.colorScheme.primary,
-          indicatorWeight: 2.5,
-          tabs: const [
-            Tab(text: 'Pending'),
-            Tab(text: 'Completed'),
-          ],
-        ),
-      ),
-      body: Consumer<TodoProvider>(
-        builder: (context, provider, _) {
-          if (provider.isLoading) {
-            return Center(
-              child: CircularProgressIndicator(color: theme.colorScheme.primary),
-            );
-          }
 
-          if (provider.error != null) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.error_outline_rounded,
-                        size: 48, color: theme.colorScheme.error),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Error loading todos',
-                      style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w600, fontSize: 16, color: theme.colorScheme.onSurface),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      provider.error!,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                          color: theme.colorScheme.onSurfaceVariant, fontSize: 13),
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: provider.fetchTodos,
-                      child: const Text('Retry'),
-                    ),
-                  ],
+    return Consumer<AuthProvider>(
+      builder: (context, auth, _) {
+        final loggedIn = auth.isLoggedIn;
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('To-Do List'),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_rounded, size: 20),
+              onPressed: () => Navigator.pop(context),
+            ),
+            actions: [
+              if (loggedIn)
+                IconButton(
+                  icon: const Icon(Icons.refresh_rounded),
+                  onPressed: _fetchTodos,
                 ),
-              ),
-            );
-          }
-
-          return TabBarView(
-            controller: _tabController,
-            children: [
-              _TodoList(
-                todos: provider.pendingTodos,
-                emptyMessage: 'No pending tasks!\nTap + to add one.',
-                emptyIcon: Icons.task_alt_rounded,
-                onEdit: (todo) => _showAddEditDialog(todo: todo),
-                onDelete: (todo) => _confirmDelete(context, todo),
-                onToggle: (todo) =>
-                    context.read<TodoProvider>().toggleComplete(todo.id),
-              ),
-              _TodoList(
-                todos: provider.completedTodos,
-                emptyMessage: 'No completed tasks yet.',
-                emptyIcon: Icons.check_circle_outline_rounded,
-                onEdit: (todo) => _showAddEditDialog(todo: todo),
-                onDelete: (todo) => _confirmDelete(context, todo),
-                onToggle: (todo) =>
-                    context.read<TodoProvider>().toggleComplete(todo.id),
-              ),
             ],
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddEditDialog(),
-        backgroundColor: theme.colorScheme.primary,
-        foregroundColor: theme.colorScheme.onPrimary,
-        child: const Icon(Icons.add_rounded),
-      ),
+            bottom: loggedIn
+                ? TabBar(
+                    controller: _tabController,
+                    labelStyle: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    unselectedLabelStyle: GoogleFonts.poppins(fontSize: 13),
+                    labelColor: theme.colorScheme.primary,
+                    unselectedLabelColor:
+                        theme.colorScheme.onSurfaceVariant,
+                    indicatorColor: theme.colorScheme.primary,
+                    indicatorWeight: 2.5,
+                    tabs: const [
+                      Tab(text: 'Pending'),
+                      Tab(text: 'Completed'),
+                    ],
+                  )
+                : null,
+          ),
+          body: !loggedIn
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.lock_outline_rounded,
+                          size: 64,
+                          color: theme.colorScheme.onSurfaceVariant
+                              .withValues(alpha: 0.4),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'First Login to use To-Do',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : Consumer<TodoProvider>(
+                  builder: (context, provider, _) {
+                    if (provider.isLoading) {
+                      return Center(
+                        child: CircularProgressIndicator(
+                          color: theme.colorScheme.primary,
+                        ),
+                      );
+                    }
+
+                    if (provider.error != null) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.error_outline_rounded,
+                                size: 48,
+                                color: theme.colorScheme.error,
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Error loading todos',
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                  color: theme.colorScheme.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                provider.error!,
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.poppins(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              ElevatedButton(
+                                onPressed: _fetchTodos,
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
+                    return TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _TodoList(
+                          todos: provider.pendingTodos,
+                          emptyMessage:
+                              'No pending tasks!\nTap + to add one.',
+                          emptyIcon: Icons.task_alt_rounded,
+                          onEdit: (todo) => _showAddEditDialog(todo: todo),
+                          onDelete: (todo) => _confirmDelete(context, todo),
+                          onToggle: (todo) => context
+                              .read<TodoProvider>()
+                              .toggleComplete(todo.id),
+                        ),
+                        _TodoList(
+                          todos: provider.completedTodos,
+                          emptyMessage: 'No completed tasks yet.',
+                          emptyIcon: Icons.check_circle_outline_rounded,
+                          onEdit: (todo) => _showAddEditDialog(todo: todo),
+                          onDelete: (todo) => _confirmDelete(context, todo),
+                          onToggle: (todo) => context
+                              .read<TodoProvider>()
+                              .toggleComplete(todo.id),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+          floatingActionButton: loggedIn
+              ? FloatingActionButton(
+                  onPressed: () => _showAddEditDialog(),
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: theme.colorScheme.onPrimary,
+                  child: const Icon(Icons.add_rounded),
+                )
+              : null,
+        );
+      },
     );
   }
 }
@@ -360,12 +422,17 @@ class _TodoList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     if (todos.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(emptyIcon, size: 64, color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4)),
+            Icon(
+              emptyIcon,
+              size: 64,
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+            ),
             const SizedBox(height: 16),
             Text(
               emptyMessage,
@@ -420,24 +487,31 @@ class _TodoCardState extends State<_TodoCard> {
     final y = dt.year.toString().padLeft(4, '0');
     final m = dt.month.toString().padLeft(2, '0');
     final d = dt.day.toString().padLeft(2, '0');
-    final hour = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
+
+    final hour24 = dt.hour;
+    final hour12 = hour24 % 12 == 0 ? 12 : hour24 % 12;
     final min = dt.minute.toString().padLeft(2, '0');
-    final ampm = dt.hour < 12 ? 'AM' : 'PM';
-    return '$y/$m/$d, $hour:$min $ampm';
+    final ampm = hour24 < 12 ? 'AM' : 'PM';
+
+    return '$y/$m/$d, $hour12:$min $ampm';
   }
 
   static String _relativeTime(DateTime dt) {
     final now = DateTime.now();
     final diff = now.difference(dt);
+
     if (diff.inSeconds < 60) return 'now';
     if (diff.inMinutes < 60) return '${diff.inMinutes} mins ago';
     if (diff.inHours < 24) return '${diff.inHours} hr ago';
+
     if (diff.inDays == 1) {
-      final hour = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
+      final hour24 = dt.hour;
+      final hour12 = hour24 % 12 == 0 ? 12 : hour24 % 12;
       final min = dt.minute.toString().padLeft(2, '0');
-      final ampm = dt.hour < 12 ? 'AM' : 'PM';
-      return 'yesterday $hour:$min $ampm';
+      final ampm = hour24 < 12 ? 'AM' : 'PM';
+      return 'yesterday $hour12:$min $ampm';
     }
+
     return _formatDate(dt);
   }
 
@@ -445,6 +519,7 @@ class _TodoCardState extends State<_TodoCard> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final todo = widget.todo;
+
     final relativeDate = _relativeTime(
       todo.isCompleted && todo.completedAt != null
           ? todo.completedAt!
@@ -483,7 +558,8 @@ class _TodoCardState extends State<_TodoCard> {
                       todo.description!,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                        color: theme.colorScheme.onSurfaceVariant
+                            .withValues(alpha: 0.7),
                       ),
                       maxLines: _expanded ? 999 : 1,
                       overflow: TextOverflow.ellipsis,
@@ -494,7 +570,9 @@ class _TodoCardState extends State<_TodoCard> {
                     relativeDate,
                     style: GoogleFonts.poppins(
                       fontSize: 11,
-                      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                      color: theme.colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.5,
+                      ),
                     ),
                   ),
               ],
@@ -510,20 +588,27 @@ class _TodoCardState extends State<_TodoCard> {
                     size: 22,
                     color: todo.isCompleted
                         ? const Color(0xFF10B981)
-                        : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                        : theme.colorScheme.onSurfaceVariant
+                            .withValues(alpha: 0.5),
                   ),
                   onPressed: widget.onToggle,
                   tooltip: todo.isCompleted ? 'Mark pending' : 'Mark complete',
                 ),
                 IconButton(
-                  icon: Icon(Icons.edit_outlined,
-                      size: 18, color: theme.colorScheme.onSurfaceVariant),
+                  icon: Icon(
+                    Icons.edit_outlined,
+                    size: 18,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                   onPressed: widget.onEdit,
                   tooltip: 'Edit',
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete_outline_rounded,
-                      size: 18, color: Color(0xFFEF4444)),
+                  icon: const Icon(
+                    Icons.delete_outline_rounded,
+                    size: 18,
+                    color: Color(0xFFEF4444),
+                  ),
                   onPressed: widget.onDelete,
                   tooltip: 'Delete',
                 ),
@@ -542,7 +627,8 @@ class _TodoCardState extends State<_TodoCard> {
                     'Created: ${_formatDate(todo.createdAt)}',
                     style: GoogleFonts.poppins(
                       fontSize: 12,
-                      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                      color: theme.colorScheme.onSurfaceVariant
+                          .withValues(alpha: 0.5),
                     ),
                   ),
                   if (todo.isCompleted && todo.completedAt != null)
@@ -552,7 +638,8 @@ class _TodoCardState extends State<_TodoCard> {
                         'Completed: ${_formatDate(todo.completedAt!)}',
                         style: GoogleFonts.poppins(
                           fontSize: 12,
-                          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                          color: theme.colorScheme.onSurfaceVariant
+                              .withValues(alpha: 0.5),
                         ),
                       ),
                     ),

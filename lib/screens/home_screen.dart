@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'api_screen.dart';
 import 'todo_screen.dart';
+import 'login_screen.dart';
 import '../services/auth_provider.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -114,7 +115,35 @@ class HomeScreen extends StatelessWidget {
                 icon: Icons.person_rounded,
                 color: const Color(0xFF0EA5E9),
                 isRequired: true,
-                onTap: () => onNavigateToTab?.call(4),
+                onTap: () {
+                  final auth = context.read<AuthProvider>();
+                  if (!auth.isLoggedIn) {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('Login Required'),
+                        content: const Text('First Login to see your profile'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(ctx).pop();
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const LoginScreen(),
+                                ),
+                              );
+                            },
+                            child: const Text('Login'),
+                          ),
+                        ],
+                      ),
+                    );
+                  } else {
+                    onNavigateToTab?.call(4);
+                  }
+                },
               ),
               const SizedBox(height: 12),
               _TaskButton(
@@ -124,7 +153,26 @@ class HomeScreen extends StatelessWidget {
                 icon: Icons.lock_rounded,
                 color: const Color(0xFF10B981),
                 isRequired: true,
-                onTap: () => onNavigateToTab?.call(4),
+                onTap: () {
+                  final auth = context.read<AuthProvider>();
+                  if (auth.isLoggedIn) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'You are already logged in',
+                          style: GoogleFonts.poppins(),
+                        ),
+                        backgroundColor: Colors.orange,
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    );
+                  }
+                },
               ),
               const SizedBox(height: 12),
               _TaskButton(
@@ -147,10 +195,38 @@ class HomeScreen extends StatelessWidget {
                 icon: Icons.checklist_rounded,
                 color: const Color(0xFFEF4444),
                 isRequired: false,
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const TodoScreen()),
-                ),
+                onTap: () {
+                  final auth = context.read<AuthProvider>();
+                  if (!auth.isLoggedIn) {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('Login Required'),
+                        content: const Text('First Login to use To-Do'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(ctx).pop();
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const LoginScreen(),
+                                ),
+                              );
+                            },
+                            child: const Text('Login'),
+                          ),
+                        ],
+                      ),
+                    );
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const TodoScreen()),
+                    );
+                  }
+                },
               ),
               const SizedBox(height: 16),
             ],

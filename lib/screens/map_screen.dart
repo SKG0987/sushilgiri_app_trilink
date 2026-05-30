@@ -7,7 +7,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({super.key});
+  final int selectedTabIndex;
+
+  const MapScreen({super.key, required this.selectedTabIndex});
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -20,6 +22,7 @@ class _MapScreenState extends State<MapScreen> {
   LatLng _currentPosition = const LatLng(27.7172, 85.3240);
   LatLng? _searchPosition;
   double _currentRotation = 0;
+  static const LatLng _pinnedLocation = LatLng(28.123318, 84.101257);
   bool _isLoadingLocation = false;
   List<dynamic> _searchResults = [];
   bool _isSearching = false;
@@ -29,6 +32,19 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
     _getCurrentLocation();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _mapController.move(_pinnedLocation, 14);
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant MapScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedTabIndex == 1 && oldWidget.selectedTabIndex != 1) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _mapController.move(_pinnedLocation, 14);
+      });
+    }
   }
 
   @override
@@ -125,8 +141,8 @@ class _MapScreenState extends State<MapScreen> {
           FlutterMap(
             mapController: _mapController,
             options: MapOptions(
-              initialCenter: _currentPosition,
-              initialZoom: 5,
+              initialCenter: _pinnedLocation,
+              initialZoom: 14,
               onMapEvent: (event) {
                 setState(
                     () => _currentRotation = event.camera.rotation);
@@ -140,6 +156,43 @@ class _MapScreenState extends State<MapScreen> {
               ),
               MarkerLayer(
                 markers: [
+                  Marker(
+                    width: 100,
+                    height: 60,
+                    point: _pinnedLocation,
+                    alignment: Alignment.bottomCenter,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.push_pin,
+                          color: Color(0xFFDC2626),
+                          size: 36,
+                        ),
+                        const SizedBox(height: 2),
+                        DecoratedBox(
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFDC2626),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(4)),
+                          ),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            child: Text(
+                              'Sushil Giri',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   if (_currentPosition.latitude != 27.7172 ||
                       _currentPosition.longitude != 85.3240)
                     Marker(

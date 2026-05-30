@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 
 import '../services/auth_provider.dart';
+import '../services/todo_provider.dart';
 import 'login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -198,6 +199,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _logout() async {
+    context.read<TodoProvider>().clearTodos();
     await context.read<AuthProvider>().signOut();
   }
 

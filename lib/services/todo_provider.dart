@@ -115,6 +115,12 @@ class TodoProvider extends ChangeNotifier {
     }
   }
 
+  void clearTodos() {
+    _todos = [];
+    _error = null;
+    notifyListeners();
+  }
+
   Future<void> deleteTodo(String id) async {
     try {
       await _supabase.from('todos').delete().eq('id', id);

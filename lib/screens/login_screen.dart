@@ -110,9 +110,25 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleSubmit() async {
-    if (!_formKey.currentState!.validate()) return;
-
     final authProvider = context.read<AuthProvider>();
+
+    if (authProvider.isLoggedIn && !_isSignup) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'You are already logged in',
+              style: GoogleFonts.poppins(),
+            ),
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+      return;
+    }
+
+    if (!_formKey.currentState!.validate()) return;
 
       if (_isSignup) {
         final success = await authProvider.signUp(
